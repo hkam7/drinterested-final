@@ -119,5 +119,16 @@ export default async function Page() {
     featuredPosts = featuredBlogsData.map(formatBlogPost)
   }
 
-  return <ClientPage recentPost={recentPost} featuredEvent={featuredEvent} featuredPosts={featuredPosts} />
+  return (
+    <>
+      <ClientPage recentPost={recentPost} featuredEvent={featuredEvent} featuredPosts={featuredPosts} />
+
+      {/* Tawk.to Script - chat widget */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();(function(){var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];s1.async=true;s1.src='https://embed.tawk.to/6ad1a2ea981c7d34cca3287e/1k51e8oru';s1.charset='UTF-8';s1.setAttribute('crossorigin','*');s0.parentNode.insertBefore(s1,s0);})();`,
+        }}
+      />
+    </>
+  )
 }
