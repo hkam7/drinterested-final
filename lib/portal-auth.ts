@@ -1,37 +1,14 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js"
 import { DriveApiError } from "@/lib/google-drive"
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-/** Same trust boundary as the rest of the member portal (app/dashboard/page.tsx): the caller
- *  must be a signed-in Supabase user with an approved row in `members`. Scoping the Supabase
- *  client to the caller's own access token (rather than using the shared anon client) means
- *  any RLS policies on `members`/`settings` see the real authenticated request. Shared by every
- *  /api/drive/* route so the check stays identical across them. */
-export async function requireApprovedMember(request: Request): Promise<SupabaseClient> {
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new DriveApiError(500, "Server is missing Supabase configuration.")
-  }
-
-  const authHeader = request.headers.get("authorization") || ""
-  const token = authHeader.replace(/^Bearer\s+/i, "").trim()
-  if (!token) throw new DriveApiError(401, "Not signed in.")
-
-  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    global: { headers: { Authorization: `Bearer ${token}` } },
-  })
-
-  const { data: { user }, error: userError } = await supabase.auth.getUser()
-  if (userError || !user?.email) throw new DriveApiError(401, "Not signed in.")
-
-  const { data: member } = await supabase
-    .from("members")
-    .select("approved")
-    .eq("email", user.email.toLowerCase())
-    .maybeSingle()
-
-  if (!member?.approved) throw new DriveApiError(403, "You must be an approved member to use the Drive.")
-
-  return supabase
+/**
+ * Supabase has been removed from this project. This helper previously returned a
+ * Supabase client scoped to the calling user's token and verified the user's
+ * membership/approval. It now fails-fast and explains the removal so callers can
+ * be updated to an alternate auth path.
+ */
+export async function requireApprovedMember(): Promise<never> {
+  throw new DriveApiError(
+    500,
+    "Supabase integration removed: member approval check is disabled. Restore Supabase or implement an alternate auth path."
+  )
 }

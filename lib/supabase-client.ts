@@ -1,21 +1,21 @@
-import { createClient } from "@supabase/supabase-js"
-import { resilientFetch } from "./resilient-fetch"
+// This file is a deliberate runtime stub that replaces the previous Supabase
+// client. Importing this module is safe — it does not throw at import time — but
+// any attempt to call into the client will fail immediately with a clear error
+// message explaining that the Supabase integration was removed.
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const ERROR_MSG =
+  "Supabase integration has been removed from this repository. Restore the Supabase client or implement an alternate data/auth provider before calling into data/auth APIs.";
 
-// A3 fix: validate on both client and server — fail loudly rather than silently
-// using placeholder credentials that cause silent data failures on SSR pages
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    "Missing Supabase environment variables.\n" +
-    "Ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set in .env.local"
-  )
+function thrower(): never {
+  throw new Error(ERROR_MSG);
 }
 
-// global.fetch covers every request this client makes — data, auth, storage — so the
-// network-blocked-wifi fallback in resilientFetch (see lib/resilient-fetch.ts) applies
-// uniformly, including to login itself, not just data reads.
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  global: { fetch: resilientFetch },
-})
+// A permissive proxy that throws as soon as any property is accessed or any call
+// is attempted. This preserves existing imports while failing fast and clearly
+// at runtime.
+export const supabase: any = new Proxy(() => {
+  thrower();
+}, {
+  get: () => thrower,
+  apply: () => thrower,
+});
